@@ -86,20 +86,15 @@ export function useTTS() {
   const progressBaseRef = useRef(0), progressScaleRef = useRef(1);
 
   useEffect(() => {
-    // silent audio for mobile background play
-    const audio = new Audio(); audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'; audio.loop = true; audio.volume = 0.01;
-    silentAudioRef.current = audio;
-    return () => { audio.pause(); audio.src = ''; };
+    // Removed silent audio hack
   }, []);
 
   const releaseWakeLock = useCallback(async () => {
     if (wakeLockRef.current) { try { await wakeLockRef.current.release(); } catch {} wakeLockRef.current = null; }
-    if (silentAudioRef.current) silentAudioRef.current.pause();
   }, []);
   const requestWakeLock = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!wakeLockRef.current && typeof navigator !== 'undefined' && 'wakeLock' in navigator) { try { wakeLockRef.current = await (navigator as any).wakeLock.request('screen'); } catch {} }
-    if (silentAudioRef.current) { try { await silentAudioRef.current.play(); } catch {} }
   }, []);
 
   // play next part

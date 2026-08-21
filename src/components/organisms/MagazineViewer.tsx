@@ -281,11 +281,14 @@ export function MagazineViewer({
               }
             }
 
-            if (canon.length > 0) {
+            let pageWords = pageWordsRef.current[i - 1];
+            if (canon.length > 0 && !pageWords) {
               const tc = await pdfPage.getTextContent();
-              const pageWords = tc.items.flatMap((item: any) => extractPageWords(item, pdfPage.getViewport({ scale: 1.5 }), canon, canonIndex));
+              pageWords = tc.items.flatMap((item: any) => extractPageWords(item, pdfPage.getViewport({ scale: 1.5 }), canon, canonIndex));
               pageWordsRef.current[i - 1] = pageWords;
+            }
 
+            if (pageWords && pageWords.length > 0) {
               const textLayer = document.createElement("div");
               textLayer.className = "pdf-text-layer absolute inset-0 w-full h-full pointer-events-none";
               
@@ -329,6 +332,15 @@ export function MagazineViewer({
           const p = e.data + 1;
           for (const pageNum of [p, p + 1, p + 2, p + 3, p - 1, p - 2]) {
             await renderPage(pageNum);
+          }
+          // Cleanup distant canvases to prevent browser canvas memory limit crashes (black screen)
+          for (let i = 1; i <= total; i++) {
+            if (i < p - 4 || i > p + 4) {
+              if (rendered.has(i)) {
+                rendered.delete(i);
+                pageElements[i - 1].innerHTML = `<div class="w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin"></div>`;
+              }
+            }
           }
         });
         pf.on("changeState", () => setCurrentPage(pf.getCurrentPageIndex()));

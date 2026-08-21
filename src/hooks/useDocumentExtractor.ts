@@ -21,15 +21,14 @@ export function useDocumentExtractor() {
         const pdfjsLib = (window as any).pdfjsLib;
         const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
         
-        const pagePromises = Array.from({ length: pdf.numPages }, (_, i) => 
-          pdf.getPage(i + 1).then((p: any) => p.getTextContent())
-        );
-        const contents = await Promise.all(pagePromises);
-        
-        const fullText = contents.map(content => 
+        const pages: string[] = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const content = await (await pdf.getPage(i)).getTextContent();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (content.items as any[]).filter(i => typeof i.str === 'string').map(i => i.str).join(' ').trim()
-        ).filter(Boolean).join('\n\n');
+          const pageText = (content.items as any[]).filter(i => typeof i.str === 'string').map(i => i.str).join(' ').trim();
+          if (pageText) pages.push(pageText);
+        }
+        const fullText = pages.join('\n\n');
 
         if (!fullText.trim()) throw new Error('No text found in this PDF.');
         setStatus('done'); return fullText;

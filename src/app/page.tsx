@@ -65,7 +65,7 @@ export default function Home() {
   };
 
   return (
-    <main className="flex h-screen overflow-hidden bg-black">
+    <main className="flex h-[100dvh] overflow-hidden bg-black">
       {loadingReader && (
         <div className="fixed inset-0 bg-black/90 text-white z-[9999] flex items-center justify-center">
           Preparing Audio...

@@ -196,6 +196,8 @@ export function MagazineViewer({
         for (let i = 1; i <= total; i++) {
           const page = document.createElement("div");
           page.className = "magazine-page relative w-full h-full bg-white overflow-hidden shadow-[inset_0_0_15px_rgba(0,0,0,.14)] flex items-center justify-center";
+          page.style.backfaceVisibility = "hidden";
+          page.style.webkitBackfaceVisibility = "hidden";
           page.innerHTML = `<div class="w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin"></div>`;
           if (i === 1 || i === total) page.dataset.density = "hard";
           pageElements.push(page);
@@ -262,67 +264,62 @@ export function MagazineViewer({
             const canvas = document.createElement("canvas");
             canvas.width = viewport.width;
             canvas.height = viewport.height;
-            canvas.style.position = "absolute";
-            canvas.style.inset = "0";
-            canvas.style.width = "100%";
-            canvas.style.height = "100%";
-            canvas.style.display = "block";
             const context = canvas.getContext("2d");
-            
-            page.innerHTML = ""; 
-            page.appendChild(canvas);
 
             if (context) {
               try {
                 await pdfPage.render({ canvasContext: context, viewport }).promise;
-                const img = document.createElement("img");
-                img.src = canvas.toDataURL("image/jpeg", 0.8);
-                img.style.position = "absolute";
-                img.style.inset = "0";
-                img.style.width = "100%";
-                img.style.height = "100%";
-                img.className = "pointer-events-none"; // avoid drag issues
-                page.innerHTML = "";
-                page.appendChild(img);
+                canvas.toBlob((blob) => {
+                  if (!blob) return;
+                  const url = URL.createObjectURL(blob);
+                  const img = document.createElement("img");
+                  img.src = url;
+                  img.style.position = "absolute";
+                  img.style.inset = "0";
+                  img.style.width = "100%";
+                  img.style.height = "100%";
+                  img.className = "pointer-events-none"; // avoid drag issues
+                  
+                  requestAnimationFrame(() => {
+                    page.innerHTML = "";
+                    page.appendChild(img);
+                    
+                    // re-append text layer if exists
+                    const pageWords = pageWordsRef.current[i - 1];
+                    if (pageWords && pageWords.length > 0) {
+                      const textLayer = document.createElement("div");
+                      textLayer.className = "pdf-text-layer absolute inset-0 w-full h-full pointer-events-none";
+                      pageWords.forEach((word: WordToken) => {
+                        const span = document.createElement("span");
+                        span.className = "pdf-word absolute bg-yellow-400/0 transition-colors duration-200 cursor-pointer pointer-events-auto rounded";
+                        span.style.left = `${word.xPct * 100}%`;
+                        span.style.top = `${word.yPct * 100}%`;
+                        span.style.width = `${word.wPct * 100}%`;
+                        span.style.height = `${word.hPct * 100}%`;
+                        span.dataset.idx = word.globalIdx.toString();
+                        span.onclick = () => {
+                          if (tts) {
+                            lastActiveRef.current = word.globalIdx;
+                            tts.speakFromWord(extractedText, word.globalIdx);
+                          }
+                        };
+                        textLayer.appendChild(span);
+                        activeWordRefs.current[word.globalIdx] = span;
+                      });
+                      page.appendChild(textLayer);
+                    }
+                  });
+                }, "image/jpeg", 0.8);
               } catch (renderError) {
                 console.warn("Render error on page", i, renderError);
               }
             }
-
             let pageWords = pageWordsRef.current[i - 1];
             if (canon.length > 0 && !pageWords) {
               const tc = await pdfPage.getTextContent();
               pageWords = tc.items.flatMap((item: any) => extractPageWords(item, pdfPage.getViewport({ scale: 1.5 }), canon, canonIndex));
               pageWordsRef.current[i - 1] = pageWords;
             }
-
-            if (pageWords && pageWords.length > 0) {
-              const textLayer = document.createElement("div");
-              textLayer.className = "pdf-text-layer absolute inset-0 w-full h-full pointer-events-none";
-              
-              pageWords.forEach((word: WordToken) => {
-                const span = document.createElement("span");
-                span.className = "pdf-word absolute bg-yellow-400/0 transition-colors duration-200 cursor-pointer pointer-events-auto rounded";
-                span.style.left = `${word.xPct * 100}%`;
-                span.style.top = `${word.yPct * 100}%`;
-                span.style.width = `${word.wPct * 100}%`;
-                span.style.height = `${word.hPct * 100}%`;
-                span.dataset.idx = word.globalIdx.toString();
-                
-                span.onclick = () => {
-                  if (tts) {
-                    lastActiveRef.current = word.globalIdx;
-                    tts.speakFromWord(extractedText, word.globalIdx);
-                  }
-                };
-
-                textLayer.appendChild(span);
-                activeWordRefs.current[word.globalIdx] = span;
-              });
-              
-              page.appendChild(textLayer);
-            }
-
           } catch (e) {
             console.error("Critical error on page", i, e);
           }
@@ -346,6 +343,11 @@ export function MagazineViewer({
             if (i < p - 4 || i > p + 4) {
               if (rendered.has(i)) {
                 rendered.delete(i);
+                // Revoke object URL to prevent severe memory leak
+                const img = pageElements[i - 1].querySelector('img');
+                if (img && img.src.startsWith('blob:')) {
+                  URL.revokeObjectURL(img.src);
+                }
                 pageElements[i - 1].innerHTML = `<div class="w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin"></div>`;
               }
             }
@@ -367,6 +369,12 @@ export function MagazineViewer({
       if (pageFlipRef.current) {
         pageFlipRef.current.destroy();
         pageFlipRef.current = null;
+      }
+      if (containerRef.current) {
+        const imgs = containerRef.current.querySelectorAll('img');
+        imgs.forEach(img => {
+          if (img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+        });
       }
     };
   }, [extractedText]);
@@ -431,10 +439,10 @@ export function MagazineViewer({
 
       <div className="flex-1 flex overflow-hidden w-full h-full">
         <div className="flex-1 flex flex-col relative bg-black h-full">
-          <div className="flex-1 w-full flex items-center justify-center overflow-hidden pt-6 pb-6">
+          <div className="flex-1 w-full flex items-center justify-center overflow-hidden p-4 sm:p-6">
             <div 
               ref={containerRef} 
-              className="relative w-[92vw] max-w-[1250px] h-[88vh] max-h-[900px] max-[700px]:w-[96vw] max-[700px]:h-[82vh]" 
+              className="relative w-full h-full max-w-[1250px] max-h-[900px]" 
             />
           </div>
           <Controls

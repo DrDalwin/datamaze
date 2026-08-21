@@ -13,7 +13,7 @@ declare global {
   }
 }
 
-const PDF_FILE = "/datamaze.pdf";
+const PDF_FILE = "./datamaze.pdf";
 const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
 
@@ -80,49 +80,16 @@ export function MagazineViewer({ onToggleReader }: { onToggleReader?: () => void
         if (isCancelled) return;
 
         const pageElements: HTMLElement[] = [];
-        const backgroundTasks: (() => Promise<void>)[] = [];
 
         for (let i = 1; i <= total; i++) {
           const page = document.createElement("div");
-          page.className = "magazine-page relative w-full h-full bg-white overflow-hidden shadow-[inset_0_0_15px_rgba(0,0,0,.14)]";
+          page.className = "magazine-page relative w-full h-full bg-white overflow-hidden shadow-[inset_0_0_15px_rgba(0,0,0,.14)] flex items-center justify-center";
+          // Optional loading spinner for blank pages
+          page.innerHTML = `<div class="w-8 h-8 border-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin"></div>`;
           if (i === 1 || i === total) page.dataset.density = "hard";
           pageElements.push(page);
-
-          const renderTask = async () => {
-            if (isCancelled) return;
-            const pdfPage = await pdf.getPage(i);
-            const viewport = pdfPage.getViewport({ scale: 1.5 }); // slightly lower scale for faster render
-            const canvas = document.createElement("canvas");
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            canvas.style.position = "absolute";
-            canvas.style.inset = "0";
-            canvas.style.width = "100%";
-            canvas.style.height = "100%";
-            canvas.style.display = "block";
-            const context = canvas.getContext("2d");
-            if (context) await pdfPage.render({ canvasContext: context, viewport }).promise;
-            page.appendChild(canvas);
-          };
-
-          if (i <= 3) {
-            setLoadingText(`Rendering page ${i}...`);
-            await renderTask();
-          } else {
-            backgroundTasks.push(renderTask);
-          }
         }
 
-        setTimeout(async () => {
-          for (const task of backgroundTasks) {
-            if (isCancelled) break;
-            await task();
-            // yield to main thread to prevent UI freezing
-            await new Promise(r => setTimeout(r, 10)); 
-          }
-        }, 500);
-
-        setLoadingText("Preparing 3D book...");
         if (!containerRef.current) return;
         
         const pf = new PageFlip(containerRef.current, {
@@ -147,11 +114,45 @@ export function MagazineViewer({ onToggleReader }: { onToggleReader?: () => void
 
         pf.loadFromHTML(pageElements);
         pageFlipRef.current = pf;
+        
+        setIsLoading(false); // Book visible instantly!
 
-        pf.on("flip", (e: any) => setCurrentPage(e.data));
+        const rendered = new Set<number>();
+        const renderPage = async (i: number) => {
+          if (i < 1 || i > total || rendered.has(i) || isCancelled) return;
+          rendered.add(i);
+          const page = pageElements[i - 1];
+          try {
+            const pdfPage = await pdf.getPage(i);
+            const viewport = pdfPage.getViewport({ scale: 1.5 });
+            const canvas = document.createElement("canvas");
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            canvas.style.position = "absolute";
+            canvas.style.inset = "0";
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.display = "block";
+            const context = canvas.getContext("2d");
+            if (context) await pdfPage.render({ canvasContext: context, viewport }).promise;
+            page.innerHTML = ""; // remove spinner
+            page.appendChild(canvas);
+          } catch (e) {
+            rendered.delete(i);
+          }
+        };
+
+        // Initially render first few pages
+        [1, 2, 3, 4].forEach(renderPage);
+
+        pf.on("flip", (e: any) => {
+          setCurrentPage(e.data);
+          // Render current page + next two + previous
+          const p = e.data + 1; // pageFlip is 0-indexed, pdf is 1-indexed
+          [p, p + 1, p + 2, p + 3, p - 1, p - 2].forEach(renderPage);
+        });
         pf.on("changeState", () => setCurrentPage(pf.getCurrentPageIndex()));
         setCurrentPage(0);
-        setIsLoading(false);
 
       } catch (err: any) {
         if (!isCancelled) {

@@ -72,12 +72,14 @@ export function MagazineViewer({
   onToggleReader, 
   readerMode, 
   tts, 
-  extractedText 
+  extractedText,
+  onExtractedText
 }: { 
   onToggleReader?: () => void; 
   readerMode?: boolean; 
   tts?: any; 
   extractedText?: string;
+  onExtractedText?: (text: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pageFlipRef = useRef<PageFlip | null>(null);
@@ -156,7 +158,7 @@ export function MagazineViewer({
     async function init() {
       try {
         setLoadingText("Downloading magazine...");
-        const response = await fetch(PDF_FILE, { cache: "no-cache" });
+        const response = await fetch(PDF_FILE);
         if (!response.ok) throw new Error(`PDF download failed.`);
 
         const pdfData = await response.arrayBuffer();
@@ -216,8 +218,26 @@ export function MagazineViewer({
 
         pf.loadFromHTML(pageElements);
         pageFlipRef.current = pf;
-        
+
         setIsLoading(false);
+
+        // background text extraction so Audio mode is instant
+        if (onExtractedText && !extractedText) {
+          setTimeout(async () => {
+            try {
+              const pagePromises = Array.from({ length: total }, (_, i) => 
+                pdf.getPage(i + 1).then((p: any) => p.getTextContent())
+              );
+              const contents = await Promise.all(pagePromises);
+              const fullText = contents.map(content => 
+                (content.items as any[]).filter(i => typeof i.str === 'string').map(i => i.str).join(' ').trim()
+              ).filter(Boolean).join('\n\n');
+              onExtractedText(fullText);
+            } catch (e) {
+              console.error("BG Extract Error:", e);
+            }
+          }, 500);
+        }
 
         const rendered = new Set<number>();
         const canon = extractedText ? extractedText.split(/\s+/).filter(Boolean) : [];
@@ -370,7 +390,8 @@ export function MagazineViewer({
           <div className="flex-1 w-full flex items-center justify-center overflow-hidden pt-6 pb-6">
             <div 
               ref={containerRef} 
-              className="relative w-[92vw] max-w-[1250px] h-[88vh] max-h-[900px] max-[700px]:w-[96vw] max-[700px]:h-[82vh]" 
+              className="relative w-full max-w-[1200px] max-h-[85vh]" 
+              style={{ aspectRatio: "1190 / 842" }}
             />
           </div>
           <Controls

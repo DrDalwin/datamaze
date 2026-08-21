@@ -26,6 +26,39 @@ interface WordOffset { index: number; charStart: number; text: string; }
 
 const norm = (s: string) => s.replace(/^[^a-zA-Z0-9\u0080-\uFFFF]+|[^a-zA-Z0-9\u0080-\uFFFF]+$/g, "").toLowerCase();
 
+function processPageItems(items: any[]) {
+  const valid = items.filter(item => {
+    if (typeof item.str !== "string") return false;
+    const y = item.transform[5];
+    const s = item.str.trim();
+    // Ignore pure numbers (page numbers) near the bottom of the page
+    if (y < 80 && /^(\d+|page\s*\d+)$/i.test(s)) return false;
+    return true;
+  });
+
+  valid.sort((a, b) => {
+    const yA = a.transform[5];
+    const yB = b.transform[5];
+    // If Y is roughly the same (within 5 points), sort by X (left to right)
+    if (Math.abs(yA - yB) < 5) {
+      return a.transform[4] - b.transform[4];
+    }
+    return yB - yA; // Sort top-to-bottom
+  });
+
+  // Fix abbreviations for TTS
+  valid.forEach(item => {
+    item.str = item.str
+      .replace(/\bDr\b/g, "Doctor")
+      .replace(/\bMr\b/g, "Mister")
+      .replace(/\bMrs\b/g, "Missus")
+      .replace(/\bMs\b/g, "Miss")
+      .replace(/\bvs\b/g, "versus");
+  });
+
+  return valid;
+}
+
 function extractPageWords(item: any, vp: any, canon: string[], ci: { i: number }): WordToken[] {
   const rawStr: string = item.str ?? "";
   if (!rawStr.trim()) return [];
@@ -302,8 +335,7 @@ export function MagazineViewer({
                 if (isCancelled) return;
                 const p = await pdf.getPage(i);
                 const content = await p.getTextContent();
-                const text = (content.items as any[])
-                  .filter(x => typeof x.str === "string")
+                const text = processPageItems(content.items)
                   .map(x => x.str)
                   .join(" ")
                   .trim();
@@ -376,7 +408,7 @@ export function MagazineViewer({
             try {
               const pdfPage = await pdf.getPage(i);
               const tc = await pdfPage.getTextContent();
-              const words = tc.items.flatMap((item: any) =>
+              const words = processPageItems(tc.items).flatMap((item: any) =>
                 extractPageWords(item, pdfPage.getViewport({ scale: 1.5 }), canonWords, ci)
               );
               // overwrite any partial data from renderPage (it used wrong ci)

@@ -627,12 +627,12 @@ export function MagazineViewer({
             {/* hint toast — shown once on first reader mode activation */}
             {showHint && (
               <div
-                className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[320px] bg-[#313033] text-[#F4EFF4] text-[13px] px-3 py-2.5 rounded-[4px] shadow-lg flex items-center gap-2 animate-fade-in pointer-events-none select-none z-[9999] md:bottom-8 md:rounded-md md:w-max"
+                className="absolute bottom-28 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[320px] bg-[#313033] text-[#F4EFF4] text-[13px] px-3 py-2.5 rounded-[4px] shadow-lg flex items-center gap-2 animate-fade-in pointer-events-none select-none z-[9999] xl:bottom-8 xl:rounded-md xl:w-max"
                 role="status"
                 aria-live="polite"
               >
                 <RiInformationLine className="text-[#D0BCFF] shrink-0 w-4 h-4 md:w-5 md:h-5" />
-                <span className="flex-1 leading-snug font-normal tracking-wide text-xs md:text-sm">
+                <span className="flex-1 text-center leading-snug font-normal tracking-wide text-xs md:text-sm">
                   Tap any word to read from that point
                 </span>
                 <button
@@ -652,7 +652,7 @@ export function MagazineViewer({
                     pageFlipRef.current.turnToPage(audioPageRef.current);
                   }
                 }}
-                className="fixed bottom-36 left-1/2 -translate-x-1/2 bg-[#D0BCFF] text-[#381E72] hover:bg-[#E8DEF8] px-4 py-2.5 rounded-full shadow-lg z-[9999] animate-fade-in flex items-center gap-2 font-semibold text-sm transition-colors md:bottom-20 pointer-events-auto"
+                className="absolute bottom-40 left-1/2 -translate-x-1/2 bg-[#D0BCFF] text-[#381E72] hover:bg-[#E8DEF8] px-4 py-2.5 rounded-full shadow-lg z-[9999] animate-fade-in flex items-center gap-2 font-semibold text-sm transition-colors xl:bottom-20 pointer-events-auto"
               >
                 <RiFocus3Line size={18} /> Return to audio
               </button>

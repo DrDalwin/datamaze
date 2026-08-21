@@ -41,10 +41,10 @@ export function Header({ status, onToggleReader, readerMode, ttsSupported = true
               onClick={onToggleReader}
               className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md transition-colors text-white font-medium ${readerMode ? "bg-red-600 hover:bg-red-700" : "bg-indigo-500 hover:bg-indigo-600"}`}
               aria-pressed={readerMode}
-              aria-label={readerMode ? "Close audio mode" : "Open audio mode"}
+              aria-label={readerMode ? "Exit Audio Edition" : "Start Audio Edition"}
             >
               {readerMode ? <RiVolumeMuteLine size={15} /> : <RiHeadphoneLine size={15} />}
-              <span className="max-[500px]:hidden">{readerMode ? "Close Audio" : "Listen"}</span>
+              <span className="max-[500px]:hidden">{readerMode ? "Exit Audio Mode" : "Listen to Magazine"}</span>
             </button>
           ) : (
             <span

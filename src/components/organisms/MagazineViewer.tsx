@@ -211,7 +211,7 @@ export function MagazineViewer({
           maxWidth: 900,
           minHeight: 396,
           maxHeight: 1260,
-          usePortrait: false,
+          usePortrait: true,
           showCover: true,
           drawShadow: true,
           maxShadowOpacity: 0.55,

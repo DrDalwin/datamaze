@@ -1,0 +1,308 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Arial, Helvetica, sans-serif;
+}
+
+@layer base {
+  html,
+  body {
+    @apply m-0 p-0 w-full h-full overflow-hidden;
+    background: radial-gradient(ellipse at center, #555 0%, #292929 45%, #080808 100%);
+  }
+}
+/* ── Reader Layout Redesign ── */
+.reader-overlay {
+  --btn-h: 36px;
+  --btn: 13px;
+  width: 100%;
+  flex: 1 1 0;
+  display: flex;
+  background: transparent;
+  animation: in-soft 0.28s cubic-bezier(0.16,1,0.3,1) both;
+  overflow: hidden;
+}
+
+.reader-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reader-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  background: rgba(13,13,13,0.95);
+  border-left: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+/* On mobile, reader-body needs bottom padding for the fixed toolbar */
+@media (max-width: 767px) {
+  .reader-overlay { flex-direction: column; }
+  .reader-body { padding-bottom: 80px !important; }
+  .pdf-scroll-area { padding-bottom: 80px !important; }
+}
+
+.reader-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(12,12,12,0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  height: 60px;
+  position: relative;
+}
+
+.reader-toolbar-left {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reader-toolbar-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.reader-toolbar-right {
+  position: absolute;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reader-body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #e5e5e5; /* grey backdrop for white paper */
+  padding: 24px 12px;
+  scroll-behavior: smooth;
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .reader-body {
+    padding: 40px clamp(20px, 5vw, 60px);
+  }
+}
+
+.reader-paper {
+  background: #fff;
+  color: #1a1a1a;
+  max-width: 800px;
+  width: 100%;
+  padding: 32px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  min-height: 100%;
+}
+
+@media (min-width: 640px) {
+  .reader-paper {
+    padding: 60px clamp(30px, 6vw, 80px);
+  }
+}
+
+.reader-content {
+  line-height: 1.9;
+  letter-spacing: -0.01em;
+}
+
+.reader-content p  { margin-bottom: 1.2em; }
+.reader-content h1 { font-size: 2em; font-weight: 700; margin: 1em 0 0.5em; color: #000; letter-spacing: -0.03em; line-height: 1.2; }
+.reader-content h2 { font-size: 1.5em; font-weight: 600; margin: 0.8em 0 0.4em; color: #111; letter-spacing: -0.02em; line-height: 1.25; }
+.reader-content h3 { font-size: 1.2em; font-weight: 600; margin: 0.6em 0 0.3em; color: #222; }
+.reader-content li { margin-bottom: 0.3em; }
+.reader-content code { background: rgba(0,0,0,0.05); padding: 0.1em 0.4em; border-radius: 4px; font-family: 'Menlo','Monaco',monospace; font-size: 0.85em; color: #d03050; }
+.reader-content blockquote { border-left: 3px solid #ccc; padding-left: 1.2em; margin: 1em 0; color: #555; font-style: italic; }
+.reader-blank { height: 1em; }
+
+/* Word spans - buttery highlight */
+.reader-word {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 1px 2px;
+  margin: 0 -2px;
+  display: inline;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.reader-word:hover {
+  background: rgba(0,0,0,0.06);
+}
+.reader-word.active {
+  background: #ffeaa7; /* warm yellow highlight */
+  color: #000;
+  box-shadow: 0 0 0 2px #ffeaa7;
+  border-radius: 2px;
+}
+
+/* Sidebar Controls */
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sidebar-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.4);
+  font-weight: 600;
+}
+.sidebar-control {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sidebar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+}
+.sidebar-val {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-variant-numeric: tabular-nums;
+}
+.sidebar-select {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+}
+.sidebar-select:focus {
+  border-color: rgba(255,255,255,0.3);
+}
+.sidebar-select option {
+  background: #111;
+}
+
+/* Tabs */
+.reader-tab {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.reader-tab.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.reader-tab:hover:not(.active) {
+  color: #fff;
+}
+
+/* Autoscroll pill */
+.reader-autoscroll-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  animation: in-soft 0.25s ease both;
+  transition: transform 0.2s;
+}
+.reader-autoscroll-btn:hover {
+}
+
+/* PDF Viewer overrides */
+.pdf-scroll-area {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: #e5e5e5;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .pdf-scroll-area {
+    padding: 40px 24px;
+    gap: 24px;
+  }
+}
+
+.pdf-page-wrap {
+  position: relative;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+  max-width: 100%;
+}
+.pdf-page-canvas { display: block; position: absolute; inset: 0; }
+.pdf-text-layer { position: absolute; inset: 0; overflow: hidden; }
+.pdf-word {
+  position: absolute;
+  cursor: pointer;
+  border-radius: 2px;
+  mix-blend-mode: multiply;
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+.pdf-word:hover { background: rgba(0,0,0,0.05); }
+.pdf-word.active {
+  background: rgba(255, 234, 167, 0.7);
+  box-shadow: 0 0 0 1px rgba(255, 234, 167, 0.9);
+}
+.pdf-page-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 11px;
+  color: rgba(0,0,0,0.4);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.pdf-loading {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  color: #555; font-size: 15px; font-weight: 500;
+}
+

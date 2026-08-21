@@ -32,7 +32,7 @@ export default function Home() {
 
     setLoadingReader(true);
     try {
-      const response = await fetch("/datamaze.pdf");
+      const response = await fetch("/datamaze/datamaze.pdf");
       const blob = await response.blob();
       const file = new File([blob], "datamaze.pdf", { type: "application/pdf" });
       const text = await extract(file);

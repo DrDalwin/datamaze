@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   RiPlayLine, RiPauseLine, RiStopLine,
   RiSpeedUpLine, RiVoiceprintLine, RiVoiceRecognitionLine,
@@ -43,6 +43,14 @@ export function ReaderSidebar({
   const isPaused = tts.status === "paused";
 
   const [desktopExpanded, setDesktopExpanded] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1280);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const playPauseBtnNode = isPlaying ? (
     <button onClick={tts.pause} className="flex-1 bg-white text-black hover:bg-gray-200 h-12 rounded-xl text-[15px] font-medium flex items-center justify-center gap-2 transition-colors shadow-lg">
@@ -103,77 +111,81 @@ export function ReaderSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <div className={`reader-sidebar hidden xl:flex bg-black/40 backdrop-blur-md border-l border-white/10 shrink-0 overflow-y-auto overflow-x-hidden flex-col transition-[width] duration-300 relative ${desktopExpanded ? 'w-[300px] xl:w-[320px] p-6' : 'w-[64px] p-3 items-center'} gap-6`}>
-        <div className={`flex w-full ${desktopExpanded ? 'justify-end' : 'justify-center'} mt-1`}>
-          <button 
-            onClick={() => setDesktopExpanded(!desktopExpanded)} 
-            className="text-white/70 hover:text-white transition-colors flex items-center justify-center p-1 rounded-lg hover:bg-white/10"
-            title={desktopExpanded ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            {desktopExpanded ? <RiArrowRightSLine size={24} /> : <RiArrowLeftSLine size={24} />}
-          </button>
-        </div>
-
-        {desktopExpanded ? (
-          <>
-            <div className="flex flex-col gap-3 mt-8">
-              <h3 className="text-white/60 text-xs uppercase tracking-wider font-semibold">Playback</h3>
-              <div className="flex items-center gap-2">
-                {playPauseBtnNode}
-                <button onClick={tts.stop} className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 h-12 rounded-xl text-[15px] font-medium flex items-center justify-center gap-2 transition-colors">
-                  <RiStopLine size={20} className="shrink-0" /> Stop
-                </button>
-              </div>
-            </div>
-            {controlsNode}
-          </>
-        ) : (
-          <div className="flex flex-col items-center gap-6 mt-12 w-full">
-            <button onClick={() => isPaused ? tts.resume() : isPlaying ? tts.pause() : tts.speak(textToSpeak)} className="w-10 h-10 bg-white text-black hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
-              {isPlaying ? <RiPauseLine size={20} /> : <RiPlayLine size={20} />}
+      {isDesktop && (
+        <div className={`reader-sidebar bg-black/40 backdrop-blur-md border-l border-white/10 shrink-0 overflow-y-auto overflow-x-hidden flex flex-col transition-[width] duration-300 relative ${desktopExpanded ? 'w-[300px] xl:w-[320px] p-6' : 'w-[64px] p-3 items-center'} gap-6`}>
+          <div className={`flex w-full ${desktopExpanded ? 'justify-end' : 'justify-center'} mt-1`}>
+            <button 
+              onClick={() => setDesktopExpanded(!desktopExpanded)} 
+              className="text-white/70 hover:text-white transition-colors flex items-center justify-center p-1 rounded-lg hover:bg-white/10"
+              title={desktopExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            >
+              {desktopExpanded ? <RiArrowRightSLine size={24} /> : <RiArrowLeftSLine size={24} />}
             </button>
           </div>
-        )}
-      </div>
 
-      {/* Mobile bottom bar */}
-      <div className="xl:hidden fixed bottom-0 inset-x-0 z-[300]">
-        {/* Expanded sheet */}
-        {expanded && (
-          <div className="bg-[#0d0d0d]/95 backdrop-blur-xl border-t border-white/10 p-5 max-h-[70vh] overflow-y-auto">
-            {controlsNode}
-          </div>
-        )}
-
-        <div className="bg-black/80 backdrop-blur-xl border-t border-white/10 flex items-center gap-2 px-3 py-3 safe-area-pb">
-          {playPauseBtnNode}
-          
-          {currentPage !== undefined && totalPages !== undefined && (
-            <div className="flex items-center shrink-0">
-              <button onClick={onPrevPage || (() => goToPage?.(currentPage - 1))} disabled={currentPage <= 1} className="h-12 w-10 bg-white/5 text-white hover:bg-white/10 border border-white/5 rounded-l-xl flex items-center justify-center transition-colors disabled:opacity-30">
-                <RiArrowLeftSLine size={20} />
-              </button>
-              <div className="flex flex-col items-center justify-center h-12 min-w-[48px] px-2 bg-white/5 border-y border-white/5">
-                <span className="text-[9px] text-white/50 uppercase tracking-widest font-semibold leading-none mb-1">Page</span>
-                <span className="text-white text-xs font-medium tabular-nums leading-none">{currentPage}/{totalPages}</span>
+          {desktopExpanded ? (
+            <>
+              <div className="flex flex-col gap-3 mt-8">
+                <h3 className="text-white/60 text-xs uppercase tracking-wider font-semibold">Playback</h3>
+                <div className="flex items-center gap-2">
+                  {playPauseBtnNode}
+                  <button onClick={tts.stop} className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 h-12 rounded-xl text-[15px] font-medium flex items-center justify-center gap-2 transition-colors">
+                    <RiStopLine size={20} className="shrink-0" /> Stop
+                  </button>
+                </div>
               </div>
-              <button onClick={onNextPage || (() => goToPage?.(currentPage + 1))} disabled={currentPage >= (totalPages || 1)} className="h-12 w-10 bg-white/5 text-white hover:bg-white/10 border border-white/5 rounded-r-xl flex items-center justify-center transition-colors disabled:opacity-30">
-                <RiArrowRightSLine size={20} />
+              {controlsNode}
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-6 mt-12 w-full">
+              <button onClick={() => isPaused ? tts.resume() : isPlaying ? tts.pause() : tts.speak(textToSpeak)} className="w-10 h-10 bg-white text-black hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+                {isPlaying ? <RiPauseLine size={20} /> : <RiPlayLine size={20} />}
               </button>
             </div>
           )}
-
-          <button onClick={tts.stop} className="h-12 w-12 shrink-0 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-xl flex items-center justify-center transition-colors ml-auto">
-            <RiStopLine size={20} />
-          </button>
-          <button
-            onClick={() => setExpanded(e => !e)}
-            className="h-12 w-12 shrink-0 bg-white/10 text-white hover:bg-white/15 border border-white/10 rounded-xl flex items-center justify-center transition-colors"
-          >
-            {expanded ? <RiArrowDownSLine size={20} /> : <RiArrowUpSLine size={20} />}
-          </button>
         </div>
-      </div>
+      )}
+
+      {/* Mobile bottom bar */}
+      {!isDesktop && (
+        <div className="fixed bottom-0 inset-x-0 z-[300]">
+          {/* Expanded sheet */}
+          {expanded && (
+            <div className="bg-[#0d0d0d]/95 backdrop-blur-xl border-t border-white/10 p-5 max-h-[70vh] overflow-y-auto">
+              {controlsNode}
+            </div>
+          )}
+
+          <div className="bg-black/80 backdrop-blur-xl border-t border-white/10 flex items-center gap-2 px-3 py-3 safe-area-pb">
+            {playPauseBtnNode}
+            
+            {currentPage !== undefined && totalPages !== undefined && (
+              <div className="flex items-center shrink-0">
+                <button onClick={onPrevPage || (() => goToPage?.(currentPage - 1))} disabled={currentPage <= 1} className="h-12 w-10 bg-white/5 text-white hover:bg-white/10 border border-white/5 rounded-l-xl flex items-center justify-center transition-colors disabled:opacity-30">
+                  <RiArrowLeftSLine size={20} />
+                </button>
+                <div className="flex flex-col items-center justify-center h-12 min-w-[48px] px-2 bg-white/5 border-y border-white/5">
+                  <span className="text-[9px] text-white/50 uppercase tracking-widest font-semibold leading-none mb-1">Page</span>
+                  <span className="text-white text-xs font-medium tabular-nums leading-none">{currentPage}/{totalPages}</span>
+                </div>
+                <button onClick={onNextPage || (() => goToPage?.(currentPage + 1))} disabled={currentPage >= (totalPages || 1)} className="h-12 w-10 bg-white/5 text-white hover:bg-white/10 border border-white/5 rounded-r-xl flex items-center justify-center transition-colors disabled:opacity-30">
+                  <RiArrowRightSLine size={20} />
+                </button>
+              </div>
+            )}
+
+            <button onClick={tts.stop} className="h-12 w-12 shrink-0 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-xl flex items-center justify-center transition-colors ml-auto">
+              <RiStopLine size={20} />
+            </button>
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="h-12 w-12 shrink-0 bg-white/10 text-white hover:bg-white/15 border border-white/10 rounded-xl flex items-center justify-center transition-colors"
+            >
+              {expanded ? <RiArrowDownSLine size={20} /> : <RiArrowUpSLine size={20} />}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-const PDF_FILE = "./datamaze.pdf";
+const PDF_FILE = "/datamaze/datamaze.pdf";
 const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
 

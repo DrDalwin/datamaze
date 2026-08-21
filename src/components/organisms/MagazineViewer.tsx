@@ -28,7 +28,8 @@ function extractPageWords(item: any, vp: any, canon: string[], ci: { i: number }
   if (!rawStr.trim()) return [];
   const [va, vb, vc, vd, ve, vf] = vp.transform;
   const [, , , , tx, ty] = item.transform as number[];
-  const cx = va * tx + vc * ty + ve, cy = vb * tx + vd * ty + vf, fontH = Math.abs(item.transform[3] * vd);
+  const cx = va * tx + vc * ty + ve, cy = vb * tx + vd * ty + vf;
+  const fontH = Math.abs(item.transform[3] * vd) || (item.height * Math.abs(vd)) || 12;
   if (fontH <= 0) return [];
   const itemW = (item.width ?? 0) * Math.abs(va), textTop = cy - fontH;
   if (textTop < -50 || cx < -50) return [];
@@ -316,12 +317,19 @@ export function MagazineViewer({
           }
         };
 
-        [1, 2, 3, 4].forEach(renderPage);
+        const initialPages = async () => {
+          for (const p of [1, 2, 3, 4]) {
+            await renderPage(p);
+          }
+        };
+        initialPages();
 
-        pf.on("flip", (e: any) => {
+        pf.on("flip", async (e: any) => {
           setCurrentPage(e.data);
           const p = e.data + 1;
-          [p, p + 1, p + 2, p + 3, p - 1, p - 2].forEach(renderPage);
+          for (const pageNum of [p, p + 1, p + 2, p + 3, p - 1, p - 2]) {
+            await renderPage(pageNum);
+          }
         });
         pf.on("changeState", () => setCurrentPage(pf.getCurrentPageIndex()));
         setCurrentPage(0);

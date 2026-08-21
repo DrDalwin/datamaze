@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "deploy": "node -e \"require('fs').writeFileSync('out/.nojekyll', '')\" && gh-pages -d out -t true"
+    "deploy": "node -e \"require('fs').writeFileSync('out/.nojekyll', '')\" && gh-pages -d out -t"
   },
   "dependencies": {
     "@remixicon/react": "^4.9.0",

@@ -276,6 +276,15 @@ export function MagazineViewer({
             if (context) {
               try {
                 await pdfPage.render({ canvasContext: context, viewport }).promise;
+                const img = document.createElement("img");
+                img.src = canvas.toDataURL("image/jpeg", 0.8);
+                img.style.position = "absolute";
+                img.style.inset = "0";
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.className = "pointer-events-none"; // avoid drag issues
+                page.innerHTML = "";
+                page.appendChild(img);
               } catch (renderError) {
                 console.warn("Render error on page", i, renderError);
               }

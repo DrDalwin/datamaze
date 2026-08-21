@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   RiPlayLine, RiPauseLine, RiStopLine,
   RiSpeedUpLine, RiVoiceprintLine, RiVoiceRecognitionLine,
-  RiZoomInLine, RiZoomOutLine,
   RiArrowLeftSLine, RiArrowRightSLine,
   RiLayoutLine, RiSettings3Line, RiCloseLine
 } from "@remixicon/react";
@@ -27,18 +26,13 @@ interface TTSProps {
 interface Props {
   tts: TTSProps;
   textToSpeak: string;
-  zoom: number;
-  setZoom: (fn: (z: number) => number) => void;
-  zoomStep: number;
-  minZoom: number;
-  maxZoom: number;
   currentPage?: number;
   totalPages?: number;
   goToPage?: (n: number) => void;
 }
 
 export function ReaderSidebar({
-  tts, textToSpeak, zoom, setZoom, zoomStep, minZoom, maxZoom,
+  tts, textToSpeak,
   currentPage, totalPages, goToPage
 }: Props) {
   const [expanded, setExpanded] = useState(false);
@@ -71,18 +65,7 @@ export function ReaderSidebar({
         </div>
       )}
 
-      {/* Zoom */}
-      <div>
-        <div className="flex justify-between text-[13px] text-white/60 mb-2 uppercase tracking-wide font-medium">
-          <span className="flex items-center gap-1.5"><RiZoomInLine size={16} /> Zoom</span>
-          <span>{Math.round(zoom * 100)}%</span>
-        </div>
-        <div className="flex items-center justify-between bg-black/40 border border-white/10 p-1.5 rounded-xl">
-          <button onClick={() => setZoom(z => Math.max(minZoom, parseFloat((z - zoomStep).toFixed(2))))} className="flex items-center justify-center h-8 w-8 text-white hover:bg-white/10 rounded transition-colors"><RiZoomOutLine size={20} /></button>
-          <span className="text-white text-[14px] font-medium tabular-nums">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom(z => Math.min(maxZoom, parseFloat((z + zoomStep).toFixed(2))))} className="flex items-center justify-center h-8 w-8 text-white hover:bg-white/10 rounded transition-colors"><RiZoomInLine size={20} /></button>
-        </div>
-      </div>
+
 
       {/* Speed */}
       <div>

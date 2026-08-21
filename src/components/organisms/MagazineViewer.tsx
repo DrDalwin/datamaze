@@ -96,7 +96,7 @@ export function MagazineViewer({
   const activeWordRefs = useRef<Record<number, HTMLSpanElement | null>>({});
 
   const pageInfo = currentPage === 0 ? "Cover" : (currentPage + 1 <= totalPages ? `Pages ${currentPage} – ${currentPage + 1}` : `Page ${currentPage}`);
-  const statusStr = isLoading ? "Preparing..." : (currentPage === 0 ? "Ready" : `Page ${currentPage} / ${totalPages}`);
+  const statusStr = isLoading ? "Preparing..." : "Ready";
   const prevDisabled = currentPage <= 0;
   const nextDisabled = currentPage >= totalPages - 1;
 
@@ -252,7 +252,7 @@ export function MagazineViewer({
               const textLayer = document.createElement("div");
               textLayer.className = "pdf-text-layer absolute inset-0 w-full h-full pointer-events-none";
               
-              pageWords.forEach((word) => {
+              pageWords.forEach((word: WordToken) => {
                 const span = document.createElement("span");
                 span.className = "pdf-word absolute bg-yellow-400/0 transition-colors duration-200 cursor-pointer pointer-events-auto rounded";
                 span.style.left = `${word.xPct * 100}%`;

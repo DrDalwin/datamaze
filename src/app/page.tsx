@@ -25,6 +25,7 @@ export default function Home() {
     
     if (extractedText) {
       setReaderMode(true);
+      tts.speak(extractedText);
       return;
     }
 
@@ -36,6 +37,7 @@ export default function Home() {
       const text = await extract(file);
       setExtractedText(text);
       setReaderMode(true);
+      tts.speak(text);
     } catch (err) {
       console.error("Failed to load audio:", err);
       alert("Failed to load Audio Mode.");

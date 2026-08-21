@@ -39,6 +39,8 @@ export function ReaderSidebar({
   const isPlaying = tts.status === "playing";
   const isPaused = tts.status === "paused";
 
+  const [desktopExpanded, setDesktopExpanded] = useState(true);
+
   const PlayPauseBtn = () => isPlaying ? (
     <button onClick={tts.pause} className="flex-1 bg-white text-black hover:bg-gray-200 h-12 rounded-xl text-[15px] font-medium flex items-center justify-center gap-2 transition-colors shadow-lg">
       <RiPauseLine size={20} className="shrink-0" /> <span className="hidden sm:inline">Pause</span>
@@ -64,8 +66,6 @@ export function ReaderSidebar({
           </div>
         </div>
       )}
-
-
 
       {/* Speed */}
       <div>
@@ -100,17 +100,36 @@ export function ReaderSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="reader-sidebar hidden md:flex bg-black/40 backdrop-blur-md border-l border-white/10 w-[300px] xl:w-[320px] shrink-0 overflow-y-auto flex-col p-6 gap-6">
-        <div className="flex flex-col gap-3">
-          <h3 className="text-white/60 text-xs uppercase tracking-wider font-semibold">Playback</h3>
-          <div className="flex items-center gap-2">
-            <PlayPauseBtn />
-            <button onClick={tts.stop} className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 h-12 rounded-xl text-[15px] font-medium flex items-center justify-center gap-2 transition-colors">
-              <RiStopLine size={20} className="shrink-0" /> Stop
+      <div className={`reader-sidebar hidden md:flex bg-black/40 backdrop-blur-md border-l border-white/10 shrink-0 overflow-y-auto flex-col transition-[width] duration-300 relative ${desktopExpanded ? 'w-[300px] xl:w-[320px] p-6' : 'w-[64px] p-3 items-center'} gap-6`}>
+        <div className={`flex w-full ${desktopExpanded ? 'justify-end' : 'justify-center'} mt-1`}>
+          <button 
+            onClick={() => setDesktopExpanded(!desktopExpanded)} 
+            className="text-white/70 hover:text-white transition-colors flex items-center justify-center p-1 rounded-lg hover:bg-white/10"
+          >
+            {desktopExpanded ? <RiArrowRightSLine size={24} /> : <RiLayoutLine size={24} />}
+          </button>
+        </div>
+
+        {desktopExpanded ? (
+          <>
+            <div className="flex flex-col gap-3 mt-8">
+              <h3 className="text-white/60 text-xs uppercase tracking-wider font-semibold">Playback</h3>
+              <div className="flex items-center gap-2">
+                <PlayPauseBtn />
+                <button onClick={tts.stop} className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 h-12 rounded-xl text-[15px] font-medium flex items-center justify-center gap-2 transition-colors">
+                  <RiStopLine size={20} className="shrink-0" /> Stop
+                </button>
+              </div>
+            </div>
+            <Controls />
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-6 mt-12 w-full">
+            <button onClick={() => isPaused ? tts.resume() : isPlaying ? tts.pause() : tts.speak(textToSpeak)} className="w-10 h-10 bg-white text-black hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+              {isPlaying ? <RiPauseLine size={20} /> : <RiPlayLine size={20} />}
             </button>
           </div>
-        </div>
-        <Controls />
+        )}
       </div>
 
       {/* Mobile bottom bar + sheet */}

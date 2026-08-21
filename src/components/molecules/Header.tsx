@@ -15,7 +15,7 @@ export function Header({ status, onToggleReader, readerMode }: { status: string;
             {readerMode ? 'Close Audio' : 'Listen to this Magazine'}
           </button>
         )}
-        <StatusText text={status} className="max-[700px]:text-[11px]" />
+        {status !== "Ready" && <StatusText text={status} className="max-[700px]:text-[11px]" />}
       </div>
     </div>
   );

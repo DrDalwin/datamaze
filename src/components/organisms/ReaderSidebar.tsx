@@ -103,7 +103,7 @@ export function ReaderSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <div className={`reader-sidebar hidden lg:flex bg-black/40 backdrop-blur-md border-l border-white/10 shrink-0 overflow-y-auto overflow-x-hidden flex-col transition-[width] duration-300 relative ${desktopExpanded ? 'w-[300px] xl:w-[320px] p-6' : 'w-[64px] p-3 items-center'} gap-6`}>
+      <div className={`reader-sidebar hidden xl:flex bg-black/40 backdrop-blur-md border-l border-white/10 shrink-0 overflow-y-auto overflow-x-hidden flex-col transition-[width] duration-300 relative ${desktopExpanded ? 'w-[300px] xl:w-[320px] p-6' : 'w-[64px] p-3 items-center'} gap-6`}>
         <div className={`flex w-full ${desktopExpanded ? 'justify-end' : 'justify-center'} mt-1`}>
           <button 
             onClick={() => setDesktopExpanded(!desktopExpanded)} 
@@ -137,7 +137,7 @@ export function ReaderSidebar({
       </div>
 
       {/* Mobile bottom bar */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-[300]">
+      <div className="xl:hidden fixed bottom-0 inset-x-0 z-[300]">
         {/* Expanded sheet */}
         {expanded && (
           <div className="bg-[#0d0d0d]/95 backdrop-blur-xl border-t border-white/10 p-5 max-h-[70vh] overflow-y-auto">

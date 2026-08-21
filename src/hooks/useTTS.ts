@@ -110,7 +110,12 @@ export function useTTS() {
       const match = window.speechSynthesis.getVoices().find(v => v.voiceURI === voiceURIRef.current);
       if (match) utterance.voice = match;
     }
-    utterance.onstart = () => { if (!stoppedRef.current) setStatus('playing'); };
+    utterance.onstart = () => {
+      if (!stoppedRef.current) {
+        setStatus('playing');
+        chunkIndexRef.current = index; // track current chunk for resume-after-pause
+      }
+    };
     utterance.onboundary = (e) => {
       if (stoppedRef.current) return;
       if (e.name === 'word') {
@@ -136,14 +141,20 @@ export function useTTS() {
 
   const pause = useCallback(() => {
     if (!hasTTS()) return;
-    window.speechSynthesis.pause(); setStatus('paused'); stoppedRef.current = true; releaseWakeLock();
+    // Use robust cancel instead of buggy window.speechSynthesis.pause()
+    stoppedRef.current = true; 
+    cancelSpeech(); 
+    setStatus('paused'); 
+    releaseWakeLock();
   }, [releaseWakeLock]);
 
   const resume = useCallback(() => {
     if (!hasTTS()) return;
     stoppedRef.current = false;
-    if (ttsState.currentUtterance) window.speechSynthesis.resume(); else speakChunk(chunkIndexRef.current, currentCharIndexRef.current);
-    setStatus('playing'); requestWakeLock();
+    setStatus('playing'); 
+    requestWakeLock();
+    // Re-create a fresh utterance perfectly starting from the exact character offset we left off at
+    speakChunk(chunkIndexRef.current, currentCharIndexRef.current);
   }, [speakChunk, requestWakeLock]);
 
   const stop = useCallback(() => {
@@ -181,7 +192,13 @@ export function useTTS() {
         const match = voices.find(v => v.lang.toLowerCase().startsWith(lang));
         if (match && !selectedVoiceURI.includes(match.voiceURI)) { setSelectedVoiceURI(match.voiceURI); voiceURIRef.current = match.voiceURI; }
       }
-      chunksRef.current = chunkText(text, 35); chunkIndexRef.current = 0; speakChunk(0);
+      const chunks = chunkText(text, 35);
+      chunksRef.current = chunks;
+      const { offsets, total } = computeChunkOffsets(chunks);
+      chunkOffsetsRef.current = offsets;        // was missing — caused progress to stay at 0
+      chunkTotalLenRef.current = total;         // was missing — caused progress calc to divide by 1
+      chunkIndexRef.current = 0;
+      speakChunk(0);
     });
   }, [voices, selectedVoiceURI, speakChunk, beginSpeaking, setSelectedVoiceURI]);
 

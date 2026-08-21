@@ -1,7 +1,49 @@
+@import url('https://fonts.cdnfonts.com/css/google-sans');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: 'Google Sans', 'Product Sans', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* suppress ALL PageFlip interactions when in reading/listening mode */
+[data-reading="true"] {
+  cursor: default !important;
+  user-select: none;
+  touch-action: none;
+}
+/* PageFlip internal wrapper/block elements — kill all pointer events so corner-hover cannot fire */
+[data-reading="true"] .stf__parent,
+[data-reading="true"] .stf__wrapper,
+[data-reading="true"] .stf__block,
+[data-reading="true"] .stf__item,
+[data-reading="true"] .page {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+/* kill page-corner fold shadow pseudo-elements */
+[data-reading="true"] .page:before,
+[data-reading="true"] .page:after,
+[data-reading="true"] .stf__item:before,
+[data-reading="true"] .stf__item:after {
+  display: none !important;
+  opacity: 0 !important;
+}
+/* restore interactivity only on word spans */
+[data-reading="true"] .pdf-word {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease both;
 }
 
 @layer base {
@@ -33,7 +75,6 @@
 }
 
 .reader-sidebar {
-  width: 300px;
   flex-shrink: 0;
   background: rgba(13,13,13,0.95);
   border-left: 1px solid rgba(255,255,255,0.07);
@@ -42,6 +83,7 @@
   padding: 24px 20px;
   gap: 24px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* On mobile, reader-body needs bottom padding for the fixed toolbar */

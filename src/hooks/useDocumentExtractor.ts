@@ -18,14 +18,14 @@ export function useDocumentExtractor() {
       }
       // word files removed for ponytail compliance
       if (ext === 'pdf' || file.type === 'application/pdf') {
-        const pdfjsLib = (window as any).pdfjsLib;
-        const pdf = await pdfjsLib.getDocument({ 
-          data: new Uint8Array(await file.arrayBuffer()),
-          disableFontFace: true,
-          cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
-          cMapPacked: true,
-          standardFontDataUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/"
-        }).promise;
+        const pdfData = await file.arrayBuffer();
+    const pdf = await (window as any).pdfjsLib.getDocument({
+      data: pdfData,
+      disableFontFace: false,
+      cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/cmaps/",
+      cMapPacked: true,
+      standardFontDataUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/standard_fonts/"
+    }).promise;
         
         const pages: string[] = [];
         for (let i = 1; i <= pdf.numPages; i++) {

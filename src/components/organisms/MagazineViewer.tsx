@@ -175,15 +175,15 @@ export function MagazineViewer({
           }, 100);
         });
 
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
 
         setLoadingText("Opening PDF...");
         const pdf = await window.pdfjsLib.getDocument({ 
           data: pdfData,
-          disableFontFace: true,
-          cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
+          disableFontFace: false, // Don't use canvas font rendering
+          cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/cmaps/",
           cMapPacked: true,
-          standardFontDataUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/"
+          standardFontDataUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/standard_fonts/"
         }).promise;
         const total = pdf.numPages;
         if (total < 1) throw new Error("The PDF contains no pages.");

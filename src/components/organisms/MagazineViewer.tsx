@@ -177,7 +177,13 @@ export function MagazineViewer({
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
         setLoadingText("Opening PDF...");
-        const pdf = await window.pdfjsLib.getDocument({ data: pdfData }).promise;
+        const pdf = await window.pdfjsLib.getDocument({ 
+          data: pdfData,
+          disableFontFace: true,
+          cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
+          cMapPacked: true,
+          standardFontDataUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/"
+        }).promise;
         const total = pdf.numPages;
         if (total < 1) throw new Error("The PDF contains no pages.");
 
@@ -262,10 +268,17 @@ export function MagazineViewer({
             canvas.style.height = "100%";
             canvas.style.display = "block";
             const context = canvas.getContext("2d");
-            if (context) await pdfPage.render({ canvasContext: context, viewport }).promise;
             
             page.innerHTML = ""; 
             page.appendChild(canvas);
+
+            if (context) {
+              try {
+                await pdfPage.render({ canvasContext: context, viewport }).promise;
+              } catch (renderError) {
+                console.warn("Render error on page", i, renderError);
+              }
+            }
 
             if (canon.length > 0) {
               const tc = await pdfPage.getTextContent();
@@ -299,7 +312,7 @@ export function MagazineViewer({
             }
 
           } catch (e) {
-            rendered.delete(i);
+            console.error("Critical error on page", i, e);
           }
         };
 

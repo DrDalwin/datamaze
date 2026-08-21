@@ -127,6 +127,7 @@ export function MagazineViewer({
 
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [isPortrait, setIsPortrait] = useState(false);
 
   const [activeWordIdx, setActiveWordIdx] = useState(-1);
   const lastActiveRef = useRef(-1);
@@ -159,7 +160,7 @@ export function MagazineViewer({
   const [showHint, setShowHint] = useState(false);
   const hintShownRef = useRef(false);
 
-  const pageInfo = currentPage === 0 ? "Cover" : (currentPage + 1 <= totalPages ? `Pages ${currentPage} – ${currentPage + 1}` : `Page ${currentPage}`);
+  const pageInfo = currentPage === 0 ? "Cover" : (isPortrait ? `Page ${currentPage}` : (currentPage + 1 <= totalPages ? `Pages ${currentPage} – ${currentPage + 1}` : `Page ${currentPage}`));
   const statusStr = isLoading ? "Preparing..." : "Ready";
   const prevDisabled = currentPage <= 0;
   const nextDisabled = currentPage >= totalPages - 1;
@@ -385,9 +386,8 @@ export function MagazineViewer({
             span.style.width = `${word.wPct * 100}%`;
             span.style.height = `${word.hPct * 100}%`;
             span.dataset.idx = word.globalIdx.toString();
-            span.addEventListener("pointerdown", (e) => {
+            span.addEventListener("click", (e) => {
               e.stopPropagation();
-              e.preventDefault(); // prevents duplicate touch/click firing
               const currentTts = ttsRef.current;
               if (!currentTts || !readerModeRef.current) return;
               setUntetheredRef.current(false);
@@ -474,6 +474,7 @@ export function MagazineViewer({
         pf.on("flip", (e: any) => {
           const pageIdx = e.data as number;
           setCurrentPage(pageIdx);
+          setIsPortrait((pf as any).getOrientation() === "portrait");
           const p = pageIdx + 1;
 
           // fire-and-forget: don't block the event handler
@@ -490,8 +491,12 @@ export function MagazineViewer({
           }
         });
 
-        pf.on("changeState", () => setCurrentPage(pf.getCurrentPageIndex()));
+        pf.on("changeState", () => {
+          setCurrentPage(pf.getCurrentPageIndex());
+          setIsPortrait((pf as any).getOrientation() === "portrait");
+        });
         setCurrentPage(0);
+        setIsPortrait((pf as any).getOrientation() === "portrait");
 
       } catch (err: any) {
         if (!isCancelled) setError(err.message || "An error occurred.");
@@ -533,36 +538,6 @@ export function MagazineViewer({
     document.addEventListener("keydown", handle);
     return () => document.removeEventListener("keydown", handle);
   }, [totalPages]);
-
-  // Block PageFlip drag and hover when in reader mode.
-  // PageFlip uses Pointer Events API (pointerdown/pointermove) for corner-hover detection,
-  // so we must block both mouse AND pointer events at capture phase.
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const block = (e: Event) => {
-      if (!readerModeRef.current) return;
-      const target = e.target as Element;
-      // allow word-span clicks through for TTS jump — block everything else
-      if (!target.closest(".pdf-word")) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    };
-
-    const events = [
-      "mousedown", "mousemove", "mouseup", "click",
-      "pointerdown", "pointermove", "pointerup",
-      "touchstart", "touchmove", "touchend"
-    ] as const;
-    events.forEach(ev => container.addEventListener(ev, block, { capture: true, passive: false }));
-
-    return () => {
-      events.forEach(ev => container.removeEventListener(ev, block, { capture: true }));
-    };
-  }, []); // stable — reads readerModeRef on each event
-
 
   // When reader mode sidebar appears/disappears, PageFlip fires a resize+changeState
   // that resets getCurrentPageIndex() to 0. Restore the saved page after layout settles.
@@ -607,6 +582,7 @@ export function MagazineViewer({
           if (pf.getCurrentPageIndex() !== saved) {
             pf.turnToPage(saved);
           }
+          setIsPortrait((pf as any).getOrientation() === "portrait");
         }
       }, 350); // wait for CSS transition to finish
     });

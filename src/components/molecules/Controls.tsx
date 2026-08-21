@@ -20,8 +20,8 @@ const btnCls = "border-none outline-none bg-[#eeeeee] text-[#111] px-[14px] py-[
 export function Controls({ pageInfo, onFirst, onPrev, onNext, onLast, prevDisabled, nextDisabled }: ControlsProps) {
   return (
     <div className="w-full h-[60px] flex items-center justify-center gap-[10px] max-[700px]:gap-[4px] bg-[#080808f7] relative z-[100]">
-      <button onClick={onFirst} disabled={prevDisabled} className={btnCls} aria-label="First page">
-        <RiSkipBackLine size={15} /> <span className="max-[700px]:hidden">First</span>
+      <button onClick={onFirst} disabled={prevDisabled} className={`${btnCls} max-[700px]:hidden`} aria-label="First page">
+        <RiSkipBackLine size={15} /> <span>First</span>
       </button>
       <button onClick={onPrev} disabled={prevDisabled} className={btnCls} aria-label="Previous page">
         <RiArrowLeftSLine size={16} /> <span className="max-[700px]:hidden">Prev</span>
@@ -32,8 +32,8 @@ export function Controls({ pageInfo, onFirst, onPrev, onNext, onLast, prevDisabl
       <button onClick={onNext} disabled={nextDisabled} className={btnCls} aria-label="Next page">
         <span className="max-[700px]:hidden">Next</span> <RiArrowRightSLine size={16} />
       </button>
-      <button onClick={onLast} disabled={nextDisabled} className={btnCls} aria-label="Last page">
-        <span className="max-[700px]:hidden">Last</span> <RiSkipForwardLine size={15} />
+      <button onClick={onLast} disabled={nextDisabled} className={`${btnCls} max-[700px]:hidden`} aria-label="Last page">
+        <span>Last</span> <RiSkipForwardLine size={15} />
       </button>
     </div>
   );

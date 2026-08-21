@@ -13,7 +13,6 @@ body {
 [data-reading="true"] {
   cursor: default !important;
   user-select: none;
-  touch-action: none;
 }
 /* PageFlip internal wrapper/block elements — kill all pointer events so corner-hover cannot fire */
 [data-reading="true"] .stf__parent,

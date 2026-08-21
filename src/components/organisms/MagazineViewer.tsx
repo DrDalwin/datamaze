@@ -229,7 +229,8 @@ export function MagazineViewer({
         if (isUntetheredRef.current) return;
 
         const curr = pageFlipRef.current.getCurrentPageIndex();
-        const needsTurn = pIdx < curr || pIdx > curr + 1;
+        const isPortrait = (pageFlipRef.current as any).getOrientation() === "portrait";
+        const needsTurn = isPortrait ? (pIdx !== curr) : (pIdx < curr || pIdx > curr + 1);
         // cooldown: wait for previous flip animation to finish (flippingTime = 700ms) + buffer
         const now = Date.now();
         if (needsTurn && !isFlippingRef.current && now - lastAutoTurnRef.current > 1200) {
@@ -384,14 +385,15 @@ export function MagazineViewer({
             span.style.width = `${word.wPct * 100}%`;
             span.style.height = `${word.hPct * 100}%`;
             span.dataset.idx = word.globalIdx.toString();
-            span.onclick = (e) => {
+            span.addEventListener("pointerdown", (e) => {
               e.stopPropagation();
+              e.preventDefault(); // prevents duplicate touch/click firing
               const currentTts = ttsRef.current;
               if (!currentTts || !readerModeRef.current) return;
               setUntetheredRef.current(false);
               lastActiveRef.current = word.globalIdx;
               currentTts.speakFromWord(extractedTextRef.current, word.globalIdx);
-            };
+            });
             textLayer.appendChild(span);
             activeWordRefs.current[word.globalIdx] = span;
           });

@@ -38,7 +38,6 @@ export function ReaderSidebar({
   currentPage, totalPages, goToPage,
   onNextPage, onPrevPage
 }: Props) {
-  const [expanded, setExpanded] = useState(false);
   const isPlaying = tts.status === "playing";
   const isPaused = tts.status === "paused";
 
@@ -137,32 +136,28 @@ export function ReaderSidebar({
         )}
       </div>
 
-      {/* Mobile bottom bar + sheet */}
+      {/* Mobile bottom bar */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-[300]">
-        {/* Expanded sheet */}
-        {expanded && (
-          <div className="bg-[#0d0d0d]/95 backdrop-blur-xl border-t border-white/10 p-5 max-h-[70vh] overflow-y-auto">
-            {controlsNode}
-          </div>
-        )}
-
-        {/* Always-visible bottom toolbar */}
         <div className="bg-black/80 backdrop-blur-xl border-t border-white/10 flex items-center gap-2 px-3 py-3 safe-area-pb">
           {playPauseBtnNode}
+          
           {currentPage !== undefined && totalPages !== undefined && (
-            <div className="flex flex-col items-center justify-center h-12 min-w-[52px] px-2 bg-white/5 rounded-xl border border-white/5 shrink-0">
-              <span className="text-[9px] text-white/50 uppercase tracking-widest font-semibold leading-none mb-1">Page</span>
-              <span className="text-white text-xs font-medium tabular-nums leading-none">{currentPage}/{totalPages}</span>
+            <div className="flex items-center shrink-0">
+              <button onClick={onPrevPage || (() => goToPage?.(currentPage - 1))} disabled={currentPage <= 1} className="h-12 w-10 bg-white/5 text-white hover:bg-white/10 border border-white/5 rounded-l-xl flex items-center justify-center transition-colors disabled:opacity-30">
+                <RiArrowLeftSLine size={20} />
+              </button>
+              <div className="flex flex-col items-center justify-center h-12 min-w-[48px] px-2 bg-white/5 border-y border-white/5">
+                <span className="text-[9px] text-white/50 uppercase tracking-widest font-semibold leading-none mb-1">Page</span>
+                <span className="text-white text-xs font-medium tabular-nums leading-none">{currentPage}/{totalPages}</span>
+              </div>
+              <button onClick={onNextPage || (() => goToPage?.(currentPage + 1))} disabled={currentPage >= (totalPages || 1)} className="h-12 w-10 bg-white/5 text-white hover:bg-white/10 border border-white/5 rounded-r-xl flex items-center justify-center transition-colors disabled:opacity-30">
+                <RiArrowRightSLine size={20} />
+              </button>
             </div>
           )}
-          <button onClick={tts.stop} className="h-12 w-12 shrink-0 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-xl flex items-center justify-center transition-colors">
+
+          <button onClick={tts.stop} className="h-12 w-12 shrink-0 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-xl flex items-center justify-center transition-colors ml-auto">
             <RiStopLine size={20} />
-          </button>
-          <button
-            onClick={() => setExpanded(e => !e)}
-            className="h-12 w-12 shrink-0 bg-white/10 text-white hover:bg-white/15 border border-white/10 rounded-xl flex items-center justify-center transition-colors"
-          >
-            {expanded ? <RiCloseLine size={20} /> : <RiSettings3Line size={20} />}
           </button>
         </div>
       </div>

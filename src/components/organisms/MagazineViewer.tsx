@@ -213,8 +213,7 @@ export function MagazineViewer({
           maxHeight: 1260,
           usePortrait: true,
           showCover: true,
-          drawShadow: true,
-          maxShadowOpacity: 0.55,
+          drawShadow: false, // disabled to prevent 3D GPU crashes on some devices
           flippingTime: 900,
           useMouseEvents: true,
           mobileScrollSupport: false,

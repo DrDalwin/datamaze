@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Header } from "@/components/molecules/Header";
 import { useTTS } from "@/hooks/useTTS";
 import { useDocumentExtractor } from "@/hooks/useDocumentExtractor";
+import { ErrorBoundary } from "@/components/atoms/ErrorBoundary";
 
 const MagazineViewer = dynamic(() => import("@/components/organisms/MagazineViewer").then(m => m.MagazineViewer), { ssr: false });
 
@@ -71,13 +72,15 @@ export default function Home() {
         </div>
       )}
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        <MagazineViewer 
-          onToggleReader={toggleReader} 
-          readerMode={readerMode}
-          tts={tts}
-          extractedText={extractedText}
-          onExtractedText={handleExtractedText}
-        />
+        <ErrorBoundary>
+          <MagazineViewer 
+            onToggleReader={toggleReader} 
+            readerMode={readerMode}
+            tts={tts}
+            extractedText={extractedText}
+            onExtractedText={handleExtractedText}
+          />
+        </ErrorBoundary>
       </div>
     </main>
   );

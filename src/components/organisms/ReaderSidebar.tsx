@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   RiPlayLine, RiPauseLine, RiStopLine,
   RiSpeedUpLine, RiVoiceprintLine, RiVoiceRecognitionLine,
-  RiArrowLeftSLine, RiArrowRightSLine,
+  RiArrowLeftSLine, RiArrowRightSLine, RiArrowUpSLine, RiArrowDownSLine,
   RiLayoutLine, RiSettings3Line, RiCloseLine
 } from "@remixicon/react";
 
@@ -38,6 +38,7 @@ export function ReaderSidebar({
   currentPage, totalPages, goToPage,
   onNextPage, onPrevPage
 }: Props) {
+  const [expanded, setExpanded] = useState(false);
   const isPlaying = tts.status === "playing";
   const isPaused = tts.status === "paused";
 
@@ -102,14 +103,13 @@ export function ReaderSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <div className={`reader-sidebar hidden md:flex bg-black/40 backdrop-blur-md border-l border-white/10 shrink-0 overflow-y-auto overflow-x-hidden flex-col transition-[width] duration-300 relative ${desktopExpanded ? 'w-[300px] xl:w-[320px] p-6' : 'w-[64px] p-3 items-center'} gap-6`}>
+      <div className={`reader-sidebar hidden lg:flex bg-black/40 backdrop-blur-md border-l border-white/10 shrink-0 overflow-y-auto overflow-x-hidden flex-col transition-[width] duration-300 relative ${desktopExpanded ? 'w-[300px] xl:w-[320px] p-6' : 'w-[64px] p-3 items-center'} gap-6`}>
         <div className={`flex w-full ${desktopExpanded ? 'justify-end' : 'justify-center'} mt-1`}>
           <button 
             onClick={() => setDesktopExpanded(!desktopExpanded)} 
             className="text-white/70 hover:text-white transition-colors flex items-center justify-center p-1 rounded-lg hover:bg-white/10"
             title={desktopExpanded ? "Collapse sidebar" : "Expand sidebar"}
           >
-            {/* arrow points away from content: right=close, left=open */}
             {desktopExpanded ? <RiArrowRightSLine size={24} /> : <RiArrowLeftSLine size={24} />}
           </button>
         </div>
@@ -137,7 +137,14 @@ export function ReaderSidebar({
       </div>
 
       {/* Mobile bottom bar */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-[300]">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-[300]">
+        {/* Expanded sheet */}
+        {expanded && (
+          <div className="bg-[#0d0d0d]/95 backdrop-blur-xl border-t border-white/10 p-5 max-h-[70vh] overflow-y-auto">
+            {controlsNode}
+          </div>
+        )}
+
         <div className="bg-black/80 backdrop-blur-xl border-t border-white/10 flex items-center gap-2 px-3 py-3 safe-area-pb">
           {playPauseBtnNode}
           
@@ -158,6 +165,12 @@ export function ReaderSidebar({
 
           <button onClick={tts.stop} className="h-12 w-12 shrink-0 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-xl flex items-center justify-center transition-colors ml-auto">
             <RiStopLine size={20} />
+          </button>
+          <button
+            onClick={() => setExpanded(e => !e)}
+            className="h-12 w-12 shrink-0 bg-white/10 text-white hover:bg-white/15 border border-white/10 rounded-xl flex items-center justify-center transition-colors"
+          >
+            {expanded ? <RiArrowDownSLine size={20} /> : <RiArrowUpSLine size={20} />}
           </button>
         </div>
       </div>
